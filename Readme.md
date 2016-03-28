@@ -1,7 +1,7 @@
 # Личный проект «Кекстаграм» [![Build status][travis-image]][travis-url] [![Dependency status][dependency-image]][dependency-url]
 
 * Студент: [Анна Шергина](https://up.htmlacademy.ru/javascript/4/user/96029).
-* Наставник: `Неизвестно`.
+* Наставник: [Татьяна Коростелева](https://htmlacademy.ru/profile/id105927).
 
 ---
 
