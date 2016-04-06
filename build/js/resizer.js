@@ -173,29 +173,29 @@
       function drawFrame(startingPointX, startingPointY) {
         self._ctx.beginPath();
         self._ctx.moveTo(startingPointX, startingPointY);
-        var currentX, currentY;
-        for(var i=0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 4) / 10; i++){
+        var currentX, currentY, i;
+        for(i = 0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 4) / 10; i++) {
           self._ctx.lineTo(startingPointX + 10 * i + 5, startingPointY + 5);
           self._ctx.lineTo(startingPointX + 10 * i + 10, startingPointY);
         }
         currentX = startingPointX + 10 * i;
         currentY = startingPointY;
 
-        for(var i=0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 2) / 10; i++){
+        for(i = 0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 2) / 10; i++) {
           self._ctx.lineTo(currentX + 5, currentY + 10 * i + 5);
           self._ctx.lineTo(currentX, currentY + 10 * i + 10);
         }
-        currentX = currentX;
+        // currentX = currentX; - currentX остается прежним
         currentY = currentY + 10 * i;
 
-        for(var i=0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 4) / 10; i++){
+        for(i = 0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 4) / 10; i++) {
           self._ctx.lineTo(currentX - (10 * i + 5), currentY - 5);
           self._ctx.lineTo(currentX - (10 * i + 10), currentY);
         }
         currentX = currentX - 10 * i;
-        currentY = currentY;
+        // currentY = currentY; - currentY остается прежним
 
-        for(var i=0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 2) / 10; i++){
+        for(i = 0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 2) / 10; i++) {
           self._ctx.lineTo(currentX - 5, currentY - (10 * i + 5));
           self._ctx.lineTo(currentX, currentY - (10 * i + 10));
         }
