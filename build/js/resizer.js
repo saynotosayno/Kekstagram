@@ -94,9 +94,9 @@
       this._ctx.strokeStyle = '#ffe753';
       // Размер штрихов. Первый элемент массива задает длину штриха, второй
       // расстояние между соседними штрихами.
-      this._ctx.setLineDash([15, 10]);
+//      this._ctx.setLineDash([15, 10]);
       // Смещение первого штриха от начала линии.
-      this._ctx.lineDashOffset = 7;
+//      this._ctx.lineDashOffset = 7;
 
       // Сохранение состояния канваса.
       // Подробней см. строку 132.
@@ -107,18 +107,110 @@
 
       var displX = -(this._resizeConstraint.x + this._resizeConstraint.side / 2);
       var displY = -(this._resizeConstraint.y + this._resizeConstraint.side / 2);
+
       // Отрисовка изображения на холсте. Параметры задают изображение, которое
       // нужно отрисовать и координаты его верхнего левого угла.
       // Координаты задаются от центра холста.
       this._ctx.drawImage(this._image, displX, displY);
 
+      // Чёрный слой с прозрачностью 80%
+//      this._ctx.restore();
+      this._ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+      this._ctx.fillRect(-this._container.width / 2,
+                         -this._container.height / 2,
+                         this._container.width,
+                         this._container.height);
+
+//      this._ctx.translate(this._container.width / 2, this._container.height / 2);
+      this._ctx.drawImage(
+        this._image,
+        this._resizeConstraint.x - this._ctx.lineWidth,
+        this._resizeConstraint.y - this._ctx.lineWidth,
+        this._resizeConstraint.side + this._ctx.lineWidth / 2,
+        this._resizeConstraint.side + this._ctx.lineWidth / 2,
+        -this._resizeConstraint.side / 2 - this._ctx.lineWidth,
+        -this._resizeConstraint.side / 2 - this._ctx.lineWidth,
+        this._resizeConstraint.side + this._ctx.lineWidth / 2,
+        this._resizeConstraint.side + this._ctx.lineWidth / 2);
+
       // Отрисовка прямоугольника, обозначающего область изображения после
-      // кадрирования. Координаты задаются от центра.
-      this._ctx.strokeRect(
-          (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
-          (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
-          this._resizeConstraint.side - this._ctx.lineWidth / 2,
-          this._resizeConstraint.side - this._ctx.lineWidth / 2);
+      // кадрирования. Координаты задаются от центра. (чтобы проверить раскомментировать этот способ, закомментировать остальные, строки 97 и 99 должны быть раскомментированы)
+//      this._ctx.strokeRect(
+//          (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
+//          (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
+//          this._resizeConstraint.side - this._ctx.lineWidth / 2,
+//          this._resizeConstraint.side - this._ctx.lineWidth / 2);
+
+      // Рамка жёлтыми точками (чтобы проверить раскомментировать этот способ, закоменнтировать остальные, закомментировать строки 97 и 99)
+//      this._ctx.fillStyle = '#ffe753';
+//      var self = this;
+//      var dotRadius = 2.5;
+//
+//      function drawFrame(startingPointOffsetX, startingPointOffsetY, dotOffsetX, dotOffsetY) {
+//        self._ctx.beginPath();
+//        var offset = dotOffsetX || dotOffsetY;
+//        for(var i=0; i < self._resizeConstraint.side / offset; i++){
+//          var x = ((-self._resizeConstraint.side / 2) - self._ctx.lineWidth / 2) + startingPointOffsetX + i * dotOffsetX;
+//          var y = ((-self._resizeConstraint.side / 2) - self._ctx.lineWidth / 2) + startingPointOffsetY + i * dotOffsetY;
+//          self._ctx.moveTo(x, y);
+//          self._ctx.arc(x, y, dotRadius, 0, 2 * Math.PI, false);
+//        }
+//        self._ctx.fill();
+//      }
+//
+//      drawFrame(0, 0, dotRadius * 5, 0);
+//
+//      drawFrame(this._resizeConstraint.side - dotRadius, 0, 0, dotRadius * 5);
+//
+//      drawFrame(0, 0, 0, dotRadius * 5);
+//
+//      drawFrame(0, this._resizeConstraint.side - dotRadius, dotRadius * 5, 0);
+
+      // Рамка жёлтыми зигзагами
+      this._ctx.lineWidth = 2.5;
+      this._ctx.lineJoin = 'round';
+      var self = this;
+      function drawFrame(startingPointX, startingPointY) {
+        self._ctx.beginPath();
+        self._ctx.moveTo(startingPointX, startingPointY);
+        var currentX, currentY, i;
+        for(i = 0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 4) / 10; i++) {
+          self._ctx.lineTo(startingPointX + 10 * i + 5, startingPointY + 5);
+          self._ctx.lineTo(startingPointX + 10 * i + 10, startingPointY);
+        }
+        currentX = startingPointX + 10 * i;
+        currentY = startingPointY;
+
+        for(i = 0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 2) / 10; i++) {
+          self._ctx.lineTo(currentX + 5, currentY + 10 * i + 5);
+          self._ctx.lineTo(currentX, currentY + 10 * i + 10);
+        }
+        // currentX = currentX; - currentX остается прежним
+        currentY = currentY + 10 * i;
+
+        for(i = 0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 4) / 10; i++) {
+          self._ctx.lineTo(currentX - (10 * i + 5), currentY - 5);
+          self._ctx.lineTo(currentX - (10 * i + 10), currentY);
+        }
+        currentX = currentX - 10 * i;
+        // currentY = currentY; - currentY остается прежним
+
+        for(i = 0; i < (self._resizeConstraint.side - self._ctx.lineWidth * 2) / 10; i++) {
+          self._ctx.lineTo(currentX - 5, currentY - (10 * i + 5));
+          self._ctx.lineTo(currentX, currentY - (10 * i + 10));
+        }
+
+        self._ctx.stroke();
+      }
+
+      drawFrame(-self._resizeConstraint.side / 2 + self._ctx.lineWidth / 2,
+                -self._resizeConstraint.side / 2 - self._ctx.lineWidth * 2);
+
+      // Вывод размеров кадрируемого изображения
+      this._ctx.textAlign = 'center';
+      this._ctx.font = '14px "Open Sans", Arial';
+      this._ctx.fillStyle = 'rgb(255, 255, 255)';
+      this._ctx.fillText(this._image.naturalWidth + ' x ' + this._image.naturalHeight, 0, -this._resizeConstraint.side / 2 - 15);
 
       // Восстановление состояния канваса, которое было до вызова ctx.save
       // и последующего изменения системы координат. Нужно для того, чтобы

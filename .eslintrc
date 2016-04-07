@@ -6,6 +6,7 @@ env:
 
 globals:
   define: true
+  getMessage: true
 
 extends:
   "eslint:recommended"

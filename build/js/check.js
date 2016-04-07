@@ -1,26 +1,27 @@
+'use strict';
+/*eslint no-unused-vars: ["error", { "varsIgnorePattern": "getMessage" }]*/
+
 function getMessage(a, b) {
   if (typeof a === 'boolean') {
     if (a) {
       return 'Переданное GIF-изображение анимировано и содержит ' + b + ' кадров';
-    }
-    else {
+    } else {
       return 'Переданное GIF-изображение не анимировано';
     }
-  }
-  else if (typeof a === 'number') {
+  } else if (typeof a === 'number') {
     return 'Переданное SVG-изображение содержит ' + a + ' объектов и ' + (b * 4) + ' атрибутов';
-  }
-  else if (Array.isArray(a) && Array.isArray(b)) {  
-    return 'Общая площадь артефактов сжатия: ' + calcSquare(a,b) + ' пикселей';
-  }
-  else if (Array.isArray(a)) {  
+  } else if (Array.isArray(a) && Array.isArray(b)) {
+    return 'Общая площадь артефактов сжатия: ' + calcSquare(a, b) + ' пикселей';
+  } else if (Array.isArray(a)) {
     return 'Количество красных точек во всех строчках изображения: ' + calcSum(a);
   }
-  return 'Неподдерживаемый формат изображения'
+
+  return 'Неподдерживаемый формат изображения';
 }
+
 function calcSquare(a, b) {
   var square = 0;
-  for (var i=0; i<a.length; i++) {
+  for (var i = 0; i < a.length; i++) {
     square += a[i] * b[i];
   }
   return square;
@@ -28,12 +29,12 @@ function calcSquare(a, b) {
 
 function calcSum(a) {
   var sum = 0;
-  for (var i=0; i<a.length; i++) {
+  for (var i = 0; i < a.length; i++) {
     sum += a[i];
-    }
+  }
   return sum;
 }
-/* 
+/*
 Если первый аргумент, a, имеет тип boolean, то:
     Если он true, вернуть строку, в которую подставлен параметр b:
         "Переданное GIF-изображение анимировано и содержит [b] кадров"
