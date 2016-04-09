@@ -7,6 +7,8 @@
 
 'use strict';
 
+var browserCookies = require('browser-cookies');
+
 (function() {
   /** @enum {string} */
   var FileType = {
@@ -116,6 +118,9 @@
    * @type {HTMLFormElement}
    */
   var filterForm = document.forms['upload-filter'];
+  var lastFilter = browserCookies.get('lastFilter') || 'none';
+  var checkedFilter = document.querySelector('#upload-filter-' + lastFilter);
+  checkedFilter.setAttribute('checked', 'checked');
 
   /**
    * @type {HTMLImageElement}
@@ -260,6 +265,11 @@
    */
   filterForm.onsubmit = function(evt) {
     evt.preventDefault();
+
+    var birthDate = new Date('2015-08-17');
+    var daysFromBD = (new Date().valueOf() - birthDate.valueOf()) / 24 / 60 / 60 / 1000;
+    var currentFilter = document.querySelector('input[name="upload-filter"]:checked');
+    browserCookies.set('lastFilter', currentFilter.value, {expires: daysFromBD});
 
     cleanupResizer();
     updateBackground();
