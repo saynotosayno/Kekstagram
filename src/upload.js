@@ -69,9 +69,27 @@
 
   /**
    * Проверяет, валидны ли данные, в форме кадрирования.
+    Сумма значений полей «слева» и «сторона» не должна быть больше ширины исходного изображения.
+    Сумма значений полей «сверху» и «сторона» не должна быть больше высоты исходного изображения.
+    Поля «сверху» и «слева» не могут быть отрицательными.
    * @return {boolean}
    */
   function resizeFormIsValid() {
+    if (parseInt(resizeSide.value, 10) < 1) {
+      return false;
+    }
+    if ((parseInt(resizeX.value, 10) + parseInt(resizeSide.value, 10)) > currentResizer._image.naturalWidth) {
+      return false;
+    }
+    if ((parseInt(resizeY.value, 10) + parseInt(resizeSide.value, 10)) > currentResizer._image.naturalHeight) {
+      return false;
+    }
+    if (parseInt(resizeX.value, 10) < 0) {
+      return false;
+    }
+    if (parseInt(resizeY.value, 10) < 0) {
+      return false;
+    }
     return true;
   }
 
@@ -86,6 +104,12 @@
    * @type {HTMLFormElement}
    */
   var resizeForm = document.forms['upload-resize'];
+  var resizeSide = document.querySelector('#resize-size');
+  resizeSide.min = 1;
+  var resizeX = document.querySelector('#resize-x');
+  resizeX.min = 0;
+  var resizeY = document.querySelector('#resize-y');
+  resizeY.min = 0;
 
   /**
    * Форма добавления фильтра.
@@ -199,6 +223,22 @@
 
       resizeForm.classList.add('invisible');
       filterForm.classList.remove('invisible');
+    }
+  };
+/**
+  * Установка динамических максимальных значений полей формы по вводу.
+  */
+  resizeForm.oninput = function() {
+    resizeSide.max = Math.min(currentResizer._image.naturalWidth, currentResizer._image.naturalHeight);
+    resizeX.max = currentResizer._image.naturalWidth - parseInt(resizeSide.value, 10);
+    resizeY.max = currentResizer._image.naturalHeight - parseInt(resizeSide.value, 10);
+    var ResizeFwd = document.querySelector('#resize-fwd');
+    if (resizeFormIsValid()) {
+      ResizeFwd.removeAttribute('disabled');
+      ResizeFwd.classList.remove('upload-form-controls-fwd-disabled');
+    } else {
+      ResizeFwd.setAttribute('disabled', 'disabled');
+      ResizeFwd.classList.add('upload-form-controls-fwd-disabled');
     }
   };
 
