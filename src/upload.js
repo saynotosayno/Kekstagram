@@ -7,6 +7,8 @@
 
 'use strict';
 
+var browserCookies = require('browser-cookies');
+
 (function() {
   /** @enum {string} */
   var FileType = {
@@ -33,7 +35,11 @@
   /**
    * @type {Object.<string, string>}
    */
-  var filterMap;
+  var filterMap = {
+    'none': 'filter-none',
+    'chrome': 'filter-chrome',
+    'sepia': 'filter-sepia'
+  };
 
   /**
    * Объект, который занимается кадрированием изображения.
@@ -116,11 +122,17 @@
    * @type {HTMLFormElement}
    */
   var filterForm = document.forms['upload-filter'];
+  var lastFilter = browserCookies.get('lastFilter') || 'none';
+  var checkedFilter = document.querySelector('#upload-filter-' + lastFilter);
+  checkedFilter.setAttribute('checked', 'checked');
+
 
   /**
+   * Добавление значения фильтра из cookie к изображению при загрузке.
    * @type {HTMLImageElement}
    */
   var filterImage = filterForm.querySelector('.filter-image-preview');
+  filterImage.className = 'filter-image-preview ' + filterMap[lastFilter];
 
   /**
    * @type {HTMLElement}
@@ -254,12 +266,40 @@
   };
 
   /**
+   * Расчет дней до истечения cookie.
+   */
+  function calcDaysToExpire() {
+    var dateOfBirth = new Date('1989-08-17');
+    var currentYear = new Date().getFullYear();
+    var lastBithday = new Date(currentYear, dateOfBirth.getMonth(), dateOfBirth.getDate());
+    var daysFromBD;
+    if (lastBithday < new Date()) {
+      daysFromBD = (new Date().valueOf() - lastBithday.valueOf()) / 24 / 60 / 60 / 1000;
+    } else {
+      lastBithday.setFullYear(lastBithday.getFullYear() - 1);
+      daysFromBD = (new Date().valueOf() - lastBithday.valueOf()) / 24 / 60 / 60 / 1000;
+    }
+    return daysFromBD;
+  }
+  var daysToExpire = calcDaysToExpire();
+
+  /**
+   * Функция записи последнего фильтра в cookie.
+  */
+  function setLastFilterToCookie() {
+    var currentFilter = document.querySelector('input[name="upload-filter"]:checked');
+    browserCookies.set('lastFilter', currentFilter.value, {expires: daysToExpire});
+  }
+
+  /**
    * Отправка формы фильтра. Возвращает в начальное состояние, предварительно
    * записав сохраненный фильтр в cookie.
    * @param {Event} evt
    */
   filterForm.onsubmit = function(evt) {
     evt.preventDefault();
+
+    setLastFilterToCookie();
 
     cleanupResizer();
     updateBackground();
@@ -273,16 +313,6 @@
    * выбранному значению в форме.
    */
   filterForm.onchange = function() {
-    if (!filterMap) {
-      // Ленивая инициализация. Объект не создается до тех пор, пока
-      // не понадобится прочитать его в первый раз, а после этого запоминается
-      // навсегда.
-      filterMap = {
-        'none': 'filter-none',
-        'chrome': 'filter-chrome',
-        'sepia': 'filter-sepia'
-      };
-    }
 
     var selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
       return item.checked;
@@ -292,6 +322,8 @@
     // убрать предыдущий примененный класс. Для этого нужно или запоминать его
     // состояние или просто перезаписывать.
     filterImage.className = 'filter-image-preview ' + filterMap[selectedFilter];
+
+    setLastFilterToCookie();
   };
 
   cleanupResizer();
