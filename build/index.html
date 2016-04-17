@@ -87,6 +87,19 @@
     </span>
   </a>
 </template>
+
+<script>
+  'use strict';
+  /*
+  eslint no-unused-vars: ["error", { "varsIgnorePattern": "pictures" }]
+  */
+  var pictures = [];
+  function __picturesLoadCallback(data) {
+    pictures = data;
+    console.log(data);
+  }
+</script>
+<script src="//up.htmlacademy.ru/assets/js_intensive/jsonp/pictures.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
