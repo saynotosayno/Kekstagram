@@ -32,7 +32,10 @@ var getPictureElement = function(data, container) {
 
   image.onload = function(evt) {
     clearTimeout(imageLoadTimeout);
-    element.querySelector('img').src = evt.target.src;
+    var img = element.querySelector('img');
+    img.src = evt.target.src;
+    img.width = 182;
+    img.height = 182;
   };
 
   image.onerror = function() {
