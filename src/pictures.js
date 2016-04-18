@@ -70,15 +70,18 @@ var getPictures = function(callback) {
     picturesBlock.classList.remove('pictures-loading');
     console.log(loadedData);
   };
-  xhr.onerror = function() {
-    console.warn('Что-то пошло не так');
+  function changeInformSticker() {
     picturesBlock.classList.add('pictures-failure');
     picturesBlock.classList.remove('pictures-loading');
+  }
+  xhr.onerror = function() {
+    console.warn('Что-то пошло не так');
+    changeInformSticker();
   };
   xhr.timeout = 10000;
   xhr.ontimeout = function() {
     console.warn('Нет ответа от сервера. Проверьте подключение к интернету');
-    picturesBlock.classList.remove('pictures-loading');
+    changeInformSticker();
   };
   xhr.open('GET', PICTURES_LOAD_URL);
   xhr.send();
