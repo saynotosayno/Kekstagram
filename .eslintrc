@@ -11,6 +11,8 @@ globals:
 extends:
   "eslint:recommended"
 
+plugins: [ "html" ]
+
 rules:
   indent: [2, 2, {SwitchCase: 1}]
   block-spacing: 2
