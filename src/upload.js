@@ -175,7 +175,7 @@ var browserCookies = require('browser-cookies');
    * и показывается форма кадрирования.
    * @param {Event} evt
    */
-  uploadForm.onchange = function(evt) {
+  uploadForm.addEventListener('change', function(evt) {
     var element = evt.target;
     if (element.id === 'upload-file') {
       // Проверка типа загружаемого файла, тип должен быть изображением
@@ -205,14 +205,14 @@ var browserCookies = require('browser-cookies');
         showMessage(Action.ERROR);
       }
     }
-  };
+  });
 
   /**
    * Обработка сброса формы кадрирования. Возвращает в начальное состояние
    * и обновляет фон.
    * @param {Event} evt
    */
-  resizeForm.onreset = function(evt) {
+  resizeForm.addEventListener('reset', function(evt) {
     evt.preventDefault();
 
     cleanupResizer();
@@ -220,14 +220,14 @@ var browserCookies = require('browser-cookies');
 
     resizeForm.classList.add('invisible');
     uploadForm.classList.remove('invisible');
-  };
+  });
 
   /**
    * Обработка отправки формы кадрирования. Если форма валидна, экспортирует
    * кропнутое изображение в форму добавления фильтра и показывает ее.
    * @param {Event} evt
    */
-  resizeForm.onsubmit = function(evt) {
+  resizeForm.addEventListener('submit', function(evt) {
     evt.preventDefault();
 
     if (resizeFormIsValid()) {
@@ -236,11 +236,13 @@ var browserCookies = require('browser-cookies');
       resizeForm.classList.add('invisible');
       filterForm.classList.remove('invisible');
     }
-  };
-/**
-  * Установка динамических максимальных значений полей формы по вводу.
-  */
-  resizeForm.oninput = function() {
+  });
+
+  /**
+   * Установка динамических максимальных значений полей формы по вводу.
+   * Перерисовка currentResiser по изменению значений полей формы.
+   */
+  resizeForm.addEventListener('input', function() {
     resizeSide.max = Math.min(currentResizer._image.naturalWidth, currentResizer._image.naturalHeight);
     resizeX.max = currentResizer._image.naturalWidth - parseInt(resizeSide.value, 10);
     resizeY.max = currentResizer._image.naturalHeight - parseInt(resizeSide.value, 10);
@@ -252,22 +254,29 @@ var browserCookies = require('browser-cookies');
       ResizeFwd.setAttribute('disabled', 'disabled');
       ResizeFwd.classList.add('upload-form-controls-fwd-disabled');
     }
-  };
+    currentResizer.setConstraint(parseInt(resizeX.value, 10), parseInt(resizeY.value, 10), parseInt(resizeSide.value, 10));
+  });
+
+  /** Изменение значений полей по перетаскиванию изображения мышью. */
+  window.addEventListener('resizerchange', function() {
+    var squareObj = currentResizer.getConstraint();
+    resizeSide.value = squareObj.side;
+    resizeX.value = squareObj.x;
+    resizeY.value = squareObj.y;
+  });
 
   /**
    * Сброс формы фильтра. Показывает форму кадрирования.
    * @param {Event} evt
    */
-  filterForm.onreset = function(evt) {
+  filterForm.addEventListener('reset', function(evt) {
     evt.preventDefault();
 
     filterForm.classList.add('invisible');
     resizeForm.classList.remove('invisible');
-  };
+  });
 
-  /**
-   * Расчет дней до истечения cookie.
-   */
+  /** Расчет дней до истечения cookie */
   function calcDaysToExpire() {
     var dateOfBirth = new Date('1989-08-17');
     var currentYear = new Date().getFullYear();
@@ -296,7 +305,7 @@ var browserCookies = require('browser-cookies');
    * записав сохраненный фильтр в cookie.
    * @param {Event} evt
    */
-  filterForm.onsubmit = function(evt) {
+  filterForm.addEventListener('submit', function(evt) {
     evt.preventDefault();
 
     setLastFilterToCookie();
@@ -306,13 +315,13 @@ var browserCookies = require('browser-cookies');
 
     filterForm.classList.add('invisible');
     uploadForm.classList.remove('invisible');
-  };
+  });
 
   /**
    * Обработчик изменения фильтра. Добавляет класс из filterMap соответствующий
    * выбранному значению в форме.
    */
-  filterForm.onchange = function() {
+  filterForm.addEventListener('change', function() {
 
     var selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
       return item.checked;
@@ -324,7 +333,9 @@ var browserCookies = require('browser-cookies');
     filterImage.className = 'filter-image-preview ' + filterMap[selectedFilter];
 
     setLastFilterToCookie();
-  };
+  });
+
+
 
   cleanupResizer();
   updateBackground();
