@@ -17,6 +17,15 @@ if ('content' in templateElement) {
 /** @constant {number} */
 var IMAGE_LOAD_TIMEOUT = 10000;
 
+/** @type {Array.<Object>} */
+var filteredPictures = [];
+
+/** @constant {number} */
+var PAGE_SIZE = 12;
+
+/** @type {number} */
+var pageNumber = 0;
+
 /**
  * @param {Object} data
  * @param {HTMLElement} container
@@ -68,7 +77,6 @@ var getPictures = function(callback) {
     var loadedData = JSON.parse(evt.target.response);
     callback(loadedData);
     picturesBlock.classList.remove('pictures-loading');
-    console.log(loadedData);
   };
   function changeInformSticker() {
     picturesBlock.classList.add('pictures-failure');
@@ -87,18 +95,66 @@ var getPictures = function(callback) {
   xhr.send();
 };
 
-/** @param {Array.<Object>} pictures */
-var renderPictures = function(pictures) {
-  pictureContainer.innerHTML = '';
-  pictures.forEach(function(picture) {
-    getPictureElement(picture, pictureContainer);
+/** @return {boolean} */
+var isBottomReached = function() {
+  var picturesContainerPosition = pictureContainer.getBoundingClientRect();
+  return picturesContainerPosition.bottom - window.innerHeight <= 0;
+};
+
+/**
+ * @param {Array} pictures
+ * @param {number} page
+ * @param {number} pageSize
+ * @return {boolean}
+ */
+var isNextPageAvailable = function(pictures, page, pageSize) {
+  return page < Math.floor(picturesData.length / pageSize);
+};
+
+/* скролл через debounce */
+var setScrollEnabled = function() {
+  var scrollTimeout;
+  window.addEventListener('scroll', function() {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(function() {
+      console.log('debounce', new Date().toISOString());
+      renderNextPages();
+    }, 100);
   });
 };
 
 /**
-* @param {Array.<Object>} pictures
-* @param {string} filter */
+ * @param {Array.<Object>} pictures
+ * @param {number} page
+ */
+var renderPictures = function(pictures, page, replace) {
+  if (replace) {
+    pictureContainer.innerHTML = '';
+  }
+  var from = page * PAGE_SIZE;
+  var to = from + PAGE_SIZE;
+  pictures.slice(from, to).forEach(function(picture) {
+    getPictureElement(picture, pictureContainer);
+  });
+};
 
+/** @param {boolean} reset */
+var renderNextPages = function(reset) {
+  if (reset) {
+    pageNumber = 0;
+    pictureContainer.innerHTML = '';
+  }
+  while(isBottomReached() &&
+        isNextPageAvailable(picturesData, pageNumber, PAGE_SIZE)) {
+    renderPictures(filteredPictures, pageNumber);
+    pageNumber++;
+  }
+};
+
+/**
+* @param {Array.<Object>} pictures
+* @param {string} filter
+*/
 var getFilteredPictures = function(pictures, filter) {
   var picturesToFilter = pictures.slice(0);
   switch (filter) {
@@ -110,7 +166,6 @@ var getFilteredPictures = function(pictures, filter) {
       picturesToFilter = picturesToFilter.filter(function(a) {
         return new Date(a.date).valueOf() >= Date.now() - 14 * (3600 * 24 * 1000) && new Date(a.date).valueOf() <= Date.now();
       });
-      console.log(picturesToFilter);
       break;
     case 'filter-discussed':
       picturesToFilter.sort(function(a, b) {
@@ -123,23 +178,24 @@ var getFilteredPictures = function(pictures, filter) {
 
 /** @param {string} filter */
 var setFilterEnabled = function(filter) {
-  var filteredPictures = getFilteredPictures(picturesData, filter);
-  renderPictures(filteredPictures);
+  filteredPictures = getFilteredPictures(picturesData, filter);
+  pageNumber = 0;
+  renderNextPages(true);
 };
 
 var setFiltrationEnabled = function() {
-  var filtersRadio = filtersContainer.querySelectorAll('.filters-radio');
-  for (var i = 0; i < filtersRadio.length; i++) {
-    filtersRadio[i].onclick = function() {
-      setFilterEnabled(this.id);
-    };
-  }
+  filtersContainer.addEventListener('click', function(evt) {
+    if (evt.target.classList.contains('filters-radio')) {
+      setFilterEnabled(evt.target.id);
+    }
+  });
 };
 
 getPictures(function(loadedPictures) {
   picturesData = loadedPictures;
   setFiltrationEnabled();
   setFilterEnabled('filter-popular');
+  setScrollEnabled();
 });
 
 filters.classList.remove('hidden');
