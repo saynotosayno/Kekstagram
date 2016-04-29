@@ -1,15 +1,10 @@
 'use strict';
 
-var Resizer = require('./resizer');
+var Resizer = require('../resizer');
+
+var utilities = require('../utilities');
 
 var uploadModule = require('./upload-form');
-var fileRegExp = uploadModule.fileRegExp;
-var uploadForm = uploadModule.uploadForm;
-var showMessage = uploadModule.showMessage;
-var UPLOADING = uploadModule.UPLOADING;
-var ERROR = uploadModule.ERROR;
-var hideMessage = uploadModule.hideMessage;
-var updateBackground = uploadModule.updateBackground;
 
 /**
  * Форма кадрирования изображения.
@@ -48,15 +43,15 @@ cleanupResizer();
  * и показывается форма кадрирования.
  * @param {Event} evt
  */
-uploadForm.addEventListener('change', function(evt) {
+uploadModule.uploadForm.addEventListener('change', function(evt) {
   var element = evt.target;
   if (element.id === 'upload-file') {
     // Проверка типа загружаемого файла, тип должен быть изображением
     // одного из форматов: JPEG, PNG, GIF или SVG.
-    if (fileRegExp.test(element.files[0].type)) {
+    if (utilities.isImgFile(element.files[0].type)) {
       var fileReader = new FileReader();
 
-      showMessage(UPLOADING);
+      uploadModule.showUploadingMsg();
 
       fileReader.onload = function() {
         cleanupResizer();
@@ -64,16 +59,16 @@ uploadForm.addEventListener('change', function(evt) {
         currentResizer = new Resizer(fileReader.result);
         currentResizer.setElement(resizeForm);
 
-        uploadForm.classList.add('invisible');
+        uploadModule.uploadForm.classList.add('invisible');
         resizeForm.classList.remove('invisible');
-        hideMessage();
+        uploadModule.hideMessage();
       };
 
       fileReader.readAsDataURL(element.files[0]);
     } else {
       // Показ сообщения об ошибке, если загружаемый файл, не является
       // поддерживаемым изображением.
-      showMessage(ERROR);
+      uploadModule.showErrorMsg();
     }
   }
 });
@@ -112,21 +107,6 @@ function exportImageFromResizer() {
 }
 
 /**
- * Обработка сброса формы кадрирования. Возвращает в начальное состояние
- * и обновляет фон.
- * @param {Event} evt
- */
-resizeForm.addEventListener('reset', function(evt) {
-  evt.preventDefault();
-
-  cleanupResizer();
-  updateBackground();
-
-  resizeForm.classList.add('invisible');
-  uploadForm.classList.remove('invisible');
-});
-
-/**
  * Установка динамических максимальных значений полей формы по вводу.
  * Перерисовка currentResiser по изменению значений полей формы.
  */
@@ -153,10 +133,7 @@ window.addEventListener('resizerchange', function() {
   resizeY.value = squareObj.y;
 });
 
-
 module.exports = {
-  uploadForm: uploadForm,
-  updateBackground: updateBackground,
   resizeForm: resizeForm,
   cleanupResizer: cleanupResizer,
   resizeFormIsValid: resizeFormIsValid,

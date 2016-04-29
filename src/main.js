@@ -1,5 +1,5 @@
 'use strict';
 
 require('./pictures');
-require('./filter-form');
+require('./forms/index');
 

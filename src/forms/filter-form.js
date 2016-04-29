@@ -3,25 +3,19 @@
 var browserCookies = require('browser-cookies');
 
 var resizeModule = require('./resize-form');
-var uploadForm = resizeModule.uploadForm;
-var updateBackground = resizeModule.updateBackground;
-var resizeForm = resizeModule.resizeForm;
-var cleanupResizer = resizeModule.cleanupResizer;
-var resizeFormIsValid = resizeModule.resizeFormIsValid;
-var exportImageFromResizer = resizeModule.exportImageFromResizer;
 
 /**
  * Обработка отправки формы кадрирования. Если форма валидна, экспортирует
  * кропнутое изображение в форму добавления фильтра и показывает ее.
  * @param {Event} evt
  */
-resizeForm.addEventListener('submit', function(evt) {
+resizeModule.resizeForm.addEventListener('submit', function(evt) {
   evt.preventDefault();
 
-  if (resizeFormIsValid()) {
-    filterImage.src = exportImageFromResizer();
+  if (resizeModule.resizeFormIsValid()) {
+    filterImage.src = resizeModule.exportImageFromResizer();
 
-    resizeForm.classList.add('invisible');
+    resizeModule.resizeForm.classList.add('invisible');
     filterForm.classList.remove('invisible');
   }
 });
@@ -59,7 +53,7 @@ filterForm.addEventListener('reset', function(evt) {
   evt.preventDefault();
 
   filterForm.classList.add('invisible');
-  resizeForm.classList.remove('invisible');
+  resizeModule.resizeForm.classList.remove('invisible');
 });
 
 /** Расчет дней до истечения cookie. */
@@ -85,23 +79,6 @@ function setLastFilterToCookie() {
 }
 
 /**
- * Отправка формы фильтра. Возвращает в начальное состояние, предварительно
- * записав сохраненный фильтр в cookie.
- * @param {Event} evt
- */
-filterForm.addEventListener('submit', function(evt) {
-  evt.preventDefault();
-
-  setLastFilterToCookie();
-
-  cleanupResizer();
-  updateBackground();
-
-  filterForm.classList.add('invisible');
-  uploadForm.classList.remove('invisible');
-});
-
-/**
  * Обработчик изменения фильтра. Добавляет класс из filterMap соответствующий
  * выбранному значению в форме.
  */
@@ -120,5 +97,6 @@ filterForm.addEventListener('change', function() {
 });
 
 module.exports = {
-  filterForm: filterForm
+  filterForm: filterForm,
+  setLastFilterToCookie: setLastFilterToCookie
 };
