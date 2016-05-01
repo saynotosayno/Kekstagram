@@ -1,5 +1,7 @@
 'use strict';
 
+var galleryModule = require('./gallery');
+
 var filters = document.querySelector('.filters');
 filters.classList.add('hidden');
 var picturesData = [];
@@ -58,6 +60,11 @@ var getPictureElement = function(data, container) {
     image.src = '';
     element.classList.add('picture-load-failure');
   }, IMAGE_LOAD_TIMEOUT);
+
+  element.addEventListener('click', function(evt) {
+    galleryModule.showGallery(filteredPictures.indexOf(data));
+    evt.preventDefault();
+  });
 
   return element;
 };
@@ -179,6 +186,7 @@ var getFilteredPictures = function(pictures, filter) {
 /** @param {string} filter */
 var setFilterEnabled = function(filter) {
   filteredPictures = getFilteredPictures(picturesData, filter);
+  galleryModule.savePricturesArray(filteredPictures);
   pageNumber = 0;
   renderNextPages(true);
 };
