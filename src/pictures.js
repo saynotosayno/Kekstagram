@@ -64,7 +64,7 @@ var isBottomReached = function() {
  * @return {boolean}
  */
 var isNextPageAvailable = function(pictures, page, pageSize) {
-  return page < Math.floor(picturesData.length / pageSize);
+  return page <= Math.floor(pictures.length / pageSize);
 };
 
 /* скролл через debounce */
@@ -142,7 +142,7 @@ var getFilteredPictures = function(pictures, filter) {
 /** @param {string} filter */
 var setFilterEnabled = function(filter) {
   filteredPictures = getFilteredPictures(picturesData, filter);
-  galleryModule.savePricturesArray(filteredPictures);
+  galleryModule.savePicturesArray(filteredPictures);
   pageNumber = 0;
   renderNextPages(true);
 };
