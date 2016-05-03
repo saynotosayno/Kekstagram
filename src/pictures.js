@@ -1,23 +1,13 @@
 'use strict';
 
+var Photo = require('./photo');
 var galleryModule = require('./gallery');
 
 var filters = document.querySelector('.filters');
 filters.classList.add('hidden');
 var picturesData = [];
 var pictureContainer = document.querySelector('.pictures');
-var templateElement = document.querySelector('#picture-template');
 var filtersContainer = document.querySelector('.filters');
-var elementToClone;
-
-if ('content' in templateElement) {
-  elementToClone = templateElement.content.querySelector('.picture');
-} else {
-  elementToClone = templateElement.querySelector('.picture');
-}
-
-/** @constant {number} */
-var IMAGE_LOAD_TIMEOUT = 10000;
 
 /** @type {Array.<Object>} */
 var filteredPictures = [];
@@ -27,47 +17,6 @@ var PAGE_SIZE = 12;
 
 /** @type {number} */
 var pageNumber = 0;
-
-/**
- * @param {Object} data
- * @param {HTMLElement} container
- * @return {HTMLElement}
- */
-var getPictureElement = function(data, container) {
-  var element = elementToClone.cloneNode(true);
-  element.querySelector('.picture-comments').textContent = data.comments;
-  element.querySelector('.picture-likes').textContent = data.likes;
-  container.appendChild(element);
-
-  var image = new Image();
-  var imageLoadTimeout;
-
-  image.onload = function(evt) {
-    clearTimeout(imageLoadTimeout);
-    var img = element.querySelector('img');
-    img.src = evt.target.src;
-    img.width = 182;
-    img.height = 182;
-  };
-
-  image.onerror = function() {
-    element.classList.add('picture-load-failure');
-  };
-
-  image.src = data.url;
-
-  imageLoadTimeout = setTimeout(function() {
-    image.src = '';
-    element.classList.add('picture-load-failure');
-  }, IMAGE_LOAD_TIMEOUT);
-
-  element.addEventListener('click', function(evt) {
-    galleryModule.showGallery(filteredPictures.indexOf(data));
-    evt.preventDefault();
-  });
-
-  return element;
-};
 
 /** @constant {string} */
 var PICTURES_LOAD_URL = '//o0.github.io/assets/json/pictures.json';
@@ -130,9 +79,13 @@ var setScrollEnabled = function() {
   });
 };
 
+/** @type {Array.<Photo>} */
+var renderedPictures = [];
+
 /**
  * @param {Array.<Object>} pictures
  * @param {number} page
+ * @param {boolean} replace
  */
 var renderPictures = function(pictures, page, replace) {
   if (replace) {
@@ -141,7 +94,7 @@ var renderPictures = function(pictures, page, replace) {
   var from = page * PAGE_SIZE;
   var to = from + PAGE_SIZE;
   pictures.slice(from, to).forEach(function(picture) {
-    getPictureElement(picture, pictureContainer);
+    renderedPictures.push(new Photo(picture, filteredPictures.indexOf(picture), pictureContainer));
   });
 };
 
@@ -149,7 +102,10 @@ var renderPictures = function(pictures, page, replace) {
 var renderNextPages = function(reset) {
   if (reset) {
     pageNumber = 0;
-    pictureContainer.innerHTML = '';
+    renderedPictures.forEach(function(picture) {
+      picture.remove();
+    });
+    renderedPictures = [];
   }
   while(isBottomReached() &&
         isNextPageAvailable(picturesData, pageNumber, PAGE_SIZE)) {
