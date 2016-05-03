@@ -142,7 +142,7 @@ var getFilteredPictures = function(pictures, filter) {
 /** @param {string} filter */
 var setFilterEnabled = function(filter) {
   filteredPictures = getFilteredPictures(picturesData, filter);
-  galleryModule.savePricturesArray(filteredPictures);
+  galleryModule.savePicturesArray(filteredPictures);
   pageNumber = 0;
   renderNextPages(true);
 };
