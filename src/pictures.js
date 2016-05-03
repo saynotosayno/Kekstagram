@@ -94,7 +94,7 @@ var renderPictures = function(pictures, page, replace) {
   var from = page * PAGE_SIZE;
   var to = from + PAGE_SIZE;
   pictures.slice(from, to).forEach(function(picture) {
-    renderedPictures.push(new Photo(picture, filteredPictures.indexOf(picture), pictureContainer));
+    renderedPictures.push(new Photo(picture, pictureContainer));
   });
 };
 
@@ -160,6 +160,18 @@ getPictures(function(loadedPictures) {
   setFiltrationEnabled();
   setFilterEnabled('filter-popular');
   setScrollEnabled();
+  restoreFromHash();
+  window.addEventListener('hashchange', _onHashChange);
 });
+
+var restoreFromHash = function() {
+  if (location.hash.match(/#photo\/(\S+)/)) {
+    galleryModule.showGallery(location.hash.replace('#photo/', ''));
+  }
+};
+
+var _onHashChange = function() {
+  restoreFromHash();
+};
 
 filters.classList.remove('hidden');
