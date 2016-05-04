@@ -1,7 +1,5 @@
 'use strict';
 
-var galleryModule = require('./gallery');
-
 var templateElement = document.querySelector('#picture-template');
 var elementToClone;
 
@@ -55,12 +53,12 @@ var getPictureElement = function(data) {
  * @param {Element} container
  * @constructor
  */
-var Photo = function(data, index, container) {
+var Photo = function(data, container) {
   this.data = data;
   this.element = getPictureElement(this.data);
 
   this.onPictureClick = function(evt) {
-    galleryModule.showGallery(index);
+    location.hash = 'photo/' + data.url;
     evt.preventDefault();
   };
 

@@ -31,9 +31,18 @@ var Gallery = function() {
     like.textContent = picture.likes;
   };
 
-  /** @param {number} index */
-  this.showGallery = function(index) {
-    this.renderPreview(index);
+  /** @param {number|string} param */
+  this.showGallery = function(param) {
+
+    if (typeof param === 'string') {
+      galleryPictures.forEach(function(picture, index) {
+        if (picture.url === param) {
+          param = index;
+        }
+      });
+    }
+
+    this.renderPreview(param);
 
     preview.addEventListener('click', this._onPhotoClick);
     closeElement.addEventListener('click', this.hideGallery);
@@ -49,10 +58,13 @@ var Gallery = function() {
     closeElement.removeEventListener('click', this.hideGallery);
     galleryContainer.removeEventListener('click', this._onOverlayClick);
     document.removeEventListener('keydown', this._onDocumentKeyDown);
+    location.hash = '';
   };
 
   this._onPhotoClick = function() {
-    self.renderPreview(++currentIndex);
+    var pic = galleryPictures[++currentIndex];
+    var url = pic.url;
+    location.hash = 'photo/' + url;
   };
 
   this._onDocumentKeyDown = function(evt) {
