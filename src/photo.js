@@ -1,7 +1,5 @@
 'use strict';
 
-var galleryModule = require('./gallery');
-
 var templateElement = document.querySelector('#picture-template');
 var elementToClone;
 
@@ -55,22 +53,24 @@ var getPictureElement = function(data) {
  * @param {Element} container
  * @constructor
  */
-var Photo = function(data, index, container) {
+var Photo = function(data, container) {
   this.data = data;
   this.element = getPictureElement(this.data);
 
-  this.onPictureClick = function(evt) {
-    galleryModule.showGallery(index);
-    evt.preventDefault();
-  };
-
-  this.remove = function() {
-    this.element.removeEventListener('click', this.onPictureClick);
-    this.element.parentNode.removeChild(this.element);
-  };
+  this.onPictureClick = this.onPictureClick.bind(this);
 
   this.element.addEventListener('click', this.onPictureClick);
   container.appendChild(this.element);
+};
+
+Photo.prototype.onPictureClick = function(evt) {
+  location.hash = 'photo/' + this.data.url;
+  evt.preventDefault();
+};
+
+Photo.prototype.remove = function() {
+  this.element.removeEventListener('click', this.onPictureClick);
+  this.element.parentNode.removeChild(this.element);
 };
 
 module.exports = Photo;

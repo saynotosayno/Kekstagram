@@ -48,7 +48,7 @@ resizeModule.resizeForm.addEventListener('reset', function(evt) {
 filterModule.filterForm.addEventListener('submit', function(evt) {
   evt.preventDefault();
 
-  filterModule.setLastFilterToCookie();
+  filterModule.setLastFilterToStorage();
 
   resizeModule.cleanupResizer();
   updateBackground();
