@@ -1,7 +1,5 @@
 'use strict';
 
-var browserCookies = require('browser-cookies');
-
 var resizeModule = require('./resize-form');
 
 /**
@@ -25,7 +23,7 @@ resizeModule.resizeForm.addEventListener('submit', function(evt) {
  * @type {HTMLFormElement}
  */
 var filterForm = document.forms['upload-filter'];
-var lastFilter = browserCookies.get('lastFilter') || 'none';
+var lastFilter = localStorage.getItem('lastFilter') || 'none';
 var checkedFilter = document.querySelector('#upload-filter-' + lastFilter);
 checkedFilter.setAttribute('checked', 'checked');
 
@@ -56,26 +54,26 @@ filterForm.addEventListener('reset', function(evt) {
   resizeModule.resizeForm.classList.remove('invisible');
 });
 
-/** Расчет дней до истечения cookie. */
-function calcDaysToExpire() {
-  var dateOfBirth = new Date('1989-08-17');
-  var currentYear = new Date().getFullYear();
-  var lastBithday = new Date(currentYear, dateOfBirth.getMonth(), dateOfBirth.getDate());
-  var daysFromBD;
-  if (lastBithday < new Date()) {
-    daysFromBD = (new Date().valueOf() - lastBithday.valueOf()) / 24 / 60 / 60 / 1000;
-  } else {
-    lastBithday.setFullYear(lastBithday.getFullYear() - 1);
-    daysFromBD = (new Date().valueOf() - lastBithday.valueOf()) / 24 / 60 / 60 / 1000;
-  }
-  return daysFromBD;
-}
-var daysToExpire = calcDaysToExpire();
+// /** Расчет дней до истечения cookie. */
+// function calcDaysToExpire() {
+//   var dateOfBirth = new Date('1989-08-17');
+//   var currentYear = new Date().getFullYear();
+//   var lastBithday = new Date(currentYear, dateOfBirth.getMonth(), dateOfBirth.getDate());
+//   var daysFromBD;
+//   if (lastBithday < new Date()) {
+//     daysFromBD = (new Date().valueOf() - lastBithday.valueOf()) / 24 / 60 / 60 / 1000;
+//   } else {
+//     lastBithday.setFullYear(lastBithday.getFullYear() - 1);
+//     daysFromBD = (new Date().valueOf() - lastBithday.valueOf()) / 24 / 60 / 60 / 1000;
+//   }
+//   return daysFromBD;
+// }
+// var daysToExpire = calcDaysToExpire();
 
-/** Функция записи последнего фильтра в cookie. */
-function setLastFilterToCookie() {
+/** Функция записи последнего фильтра в LocalStorage. */
+function setLastFilterToStorage() {
   var currentFilter = document.querySelector('input[name="upload-filter"]:checked');
-  browserCookies.set('lastFilter', currentFilter.value, {expires: daysToExpire});
+  localStorage.setItem('lastFilter', currentFilter.value);
 }
 
 /**
@@ -93,10 +91,10 @@ filterForm.addEventListener('change', function() {
   // состояние или просто перезаписывать.
   filterImage.className = 'filter-image-preview ' + filterMap[selectedFilter];
 
-  setLastFilterToCookie();
+  setLastFilterToStorage();
 });
 
 module.exports = {
   filterForm: filterForm,
-  setLastFilterToCookie: setLastFilterToCookie
+  setLastFilterToStorage: setLastFilterToStorage
 };
