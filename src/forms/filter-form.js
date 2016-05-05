@@ -1,22 +1,8 @@
 'use strict';
 
 var resizeModule = require('./resize-form');
-
-/**
- * Обработка отправки формы кадрирования. Если форма валидна, экспортирует
- * кропнутое изображение в форму добавления фильтра и показывает ее.
- * @param {Event} evt
- */
-resizeModule.resizeForm.addEventListener('submit', function(evt) {
-  evt.preventDefault();
-
-  if (resizeModule.resizeFormIsValid()) {
-    filterImage.src = resizeModule.exportImageFromResizer();
-
-    resizeModule.resizeForm.classList.add('invisible');
-    filterForm.classList.remove('invisible');
-  }
-});
+var uploadModule = require('./upload-form');
+var utilities = require('../utilities');
 
 /**
  * Форма добавления фильтра.
@@ -24,7 +10,7 @@ resizeModule.resizeForm.addEventListener('submit', function(evt) {
  */
 var filterForm = document.forms['upload-filter'];
 var lastFilter = localStorage.getItem('lastFilter') || 'none';
-var checkedFilter = document.querySelector('#upload-filter-' + lastFilter);
+var checkedFilter = filterForm.querySelector('#upload-filter-' + lastFilter);
 checkedFilter.setAttribute('checked', 'checked');
 
 /**
@@ -42,37 +28,25 @@ var filterMap = {
  */
 var filterImage = filterForm.querySelector('.filter-image-preview');
 filterImage.className = 'filter-image-preview ' + filterMap[lastFilter];
+function setFilterImageSrc(src) {
+  filterImage.src = src;
+}
 
 /**
  * Сброс формы фильтра. Показывает форму кадрирования.
  * @param {Event} evt
  */
-filterForm.addEventListener('reset', function(evt) {
+
+var onFilterFormReset = function(evt) {
   evt.preventDefault();
-
-  filterForm.classList.add('invisible');
-  resizeModule.resizeForm.classList.remove('invisible');
-});
-
-// /** Расчет дней до истечения cookie. */
-// function calcDaysToExpire() {
-//   var dateOfBirth = new Date('1989-08-17');
-//   var currentYear = new Date().getFullYear();
-//   var lastBithday = new Date(currentYear, dateOfBirth.getMonth(), dateOfBirth.getDate());
-//   var daysFromBD;
-//   if (lastBithday < new Date()) {
-//     daysFromBD = (new Date().valueOf() - lastBithday.valueOf()) / 24 / 60 / 60 / 1000;
-//   } else {
-//     lastBithday.setFullYear(lastBithday.getFullYear() - 1);
-//     daysFromBD = (new Date().valueOf() - lastBithday.valueOf()) / 24 / 60 / 60 / 1000;
-//   }
-//   return daysFromBD;
-// }
-// var daysToExpire = calcDaysToExpire();
+  hideFilterForm();
+  resizeModule.showResizeForm();
+};
 
 /** Функция записи последнего фильтра в LocalStorage. */
+
 function setLastFilterToStorage() {
-  var currentFilter = document.querySelector('input[name="upload-filter"]:checked');
+  var currentFilter = filterForm.querySelector('input[name="upload-filter"]:checked');
   localStorage.setItem('lastFilter', currentFilter.value);
 }
 
@@ -80,7 +54,8 @@ function setLastFilterToStorage() {
  * Обработчик изменения фильтра. Добавляет класс из filterMap соответствующий
  * выбранному значению в форме.
  */
-filterForm.addEventListener('change', function() {
+
+var onFilterFormChange = function() {
 
   var selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
     return item.checked;
@@ -92,9 +67,42 @@ filterForm.addEventListener('change', function() {
   filterImage.className = 'filter-image-preview ' + filterMap[selectedFilter];
 
   setLastFilterToStorage();
-});
+};
+
+/**
+ * Отправка формы фильтра. Возвращает в начальное состояние, предварительно
+ * записав сохраненный фильтр в cookie.
+ * @param {Event} evt
+ */
+var onFilterFormSubmit = function(evt) {
+  evt.preventDefault();
+
+  setLastFilterToStorage();
+  hideFilterForm();
+  resizeModule.cleanupResizer();
+  uploadModule.showUploadForm();
+};
+
+function showFilterForm() {
+  filterForm.addEventListener('change', onFilterFormChange);
+  filterForm.addEventListener('reset', onFilterFormReset);
+  filterForm.addEventListener('submit', onFilterFormSubmit);
+
+  utilities.showElement(filterForm);
+}
+
+function hideFilterForm() {
+  utilities.hideElement(filterForm);
+
+  filterForm.removeEventListener('change', onFilterFormChange);
+  filterForm.removeEventListener('reset', onFilterFormReset);
+  filterForm.removeEventListener('submit', onFilterFormSubmit);
+}
 
 module.exports = {
   filterForm: filterForm,
-  setLastFilterToStorage: setLastFilterToStorage
+  setLastFilterToStorage: setLastFilterToStorage,
+  showFilterForm: showFilterForm,
+  hideFilterForm: hideFilterForm,
+  setFilterImageSrc: setFilterImageSrc
 };

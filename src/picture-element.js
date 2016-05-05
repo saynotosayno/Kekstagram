@@ -25,21 +25,32 @@ var getPictureElement = function(data) {
   var image = new Image();
   var imageLoadTimeout;
 
-  image.onload = function(evt) {
+  var removeListeners = function() {
+    image.removeEventListener('load', onImageLoad);
+    image.removeEventListener('error', onErrorImage);
+  };
+
+  var onImageLoad = function(evt) {
     clearTimeout(imageLoadTimeout);
+    removeListeners();
     var img = element.querySelector('img');
     img.src = evt.target.src;
     img.width = 182;
     img.height = 182;
   };
+  image.addEventListener('load', onImageLoad);
 
-  image.onerror = function() {
+  var onErrorImage = function() {
+    clearTimeout(imageLoadTimeout);
+    removeListeners();
     element.classList.add('picture-load-failure');
   };
+  image.addEventListener('error', onErrorImage);
 
   image.src = data.url;
 
   imageLoadTimeout = setTimeout(function() {
+    removeListeners();
     image.src = '';
     element.classList.add('picture-load-failure');
   }, IMAGE_LOAD_TIMEOUT);
@@ -53,7 +64,7 @@ var getPictureElement = function(data) {
  * @param {Element} container
  * @constructor
  */
-var Photo = function(data, container) {
+var PictureElement = function(data, container) {
   this.data = data;
   this.element = getPictureElement(this.data);
 
@@ -63,14 +74,14 @@ var Photo = function(data, container) {
   container.appendChild(this.element);
 };
 
-Photo.prototype.onPictureClick = function(evt) {
+PictureElement.prototype.onPictureClick = function(evt) {
   location.hash = 'photo/' + this.data.url;
   evt.preventDefault();
 };
 
-Photo.prototype.remove = function() {
+PictureElement.prototype.remove = function() {
   this.element.removeEventListener('click', this.onPictureClick);
   this.element.parentNode.removeChild(this.element);
 };
 
-module.exports = Photo;
+module.exports = PictureElement;

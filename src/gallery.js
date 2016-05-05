@@ -1,4 +1,7 @@
 'use strict';
+var utilities = require('./utilities');
+
+var ESCAPE_KEY = 27;
 
 var Gallery = function() {
 
@@ -13,7 +16,7 @@ var Gallery = function() {
 
   this.currentIndex = 0;
 
-  this.hideGallery = this.hideGallery.bind(this);
+  this._onCloseElementClick = this._onCloseElementClick.bind(this);
   this._onPhotoClick = this._onPhotoClick.bind(this);
   this._onDocumentKeyDown = this._onDocumentKeyDown.bind(this);
   this._onOverlayClick = this._onOverlayClick.bind(this);
@@ -50,19 +53,25 @@ Gallery.prototype.showGallery = function(param) {
   this.renderPreview(param);
 
   this.preview.addEventListener('click', this._onPhotoClick);
-  this.closeElement.addEventListener('click', this.hideGallery);
+  this.closeElement.addEventListener('click', this._onCloseElementClick);
   this.galleryContainer.addEventListener('click', this._onOverlayClick);
   document.addEventListener('keydown', this._onDocumentKeyDown);
 
-  this.galleryContainer.classList.remove('invisible');
+  utilities.showElement(this.galleryContainer);
+};
+
+Gallery.prototype._onCloseElementClick = function() {
+  this.hideGallery();
 };
 
 Gallery.prototype.hideGallery = function() {
-  this.galleryContainer.classList.add('invisible');
+  utilities.hideElement(this.galleryContainer);
+
   this.preview.removeEventListener('click', this._onPhotoClick);
-  this.closeElement.removeEventListener('click', this.hideGallery);
+  this.closeElement.removeEventListener('click', this._onCloseElementClick);
   this.galleryContainer.removeEventListener('click', this._onOverlayClick);
   document.removeEventListener('keydown', this._onDocumentKeyDown);
+
   location.hash = '';
 };
 
@@ -73,7 +82,7 @@ Gallery.prototype._onPhotoClick = function() {
 };
 
 Gallery.prototype._onDocumentKeyDown = function(evt) {
-  if (evt.keyCode === 27) {
+  if (evt.keyCode === ESCAPE_KEY) {
     evt.preventDefault();
     this.hideGallery();
   }

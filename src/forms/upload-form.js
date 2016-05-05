@@ -1,4 +1,7 @@
 'use strict';
+var utilities = require('../utilities');
+var resizeModule = require('./resize-form');
+var updateBackground = require('./background');
 
 /** @enum {number} */
 var Action = {
@@ -38,7 +41,7 @@ function showMessage(action, message) {
   }
 
   uploadMessage.querySelector('.upload-message-container').innerHTML = message;
-  uploadMessage.classList.remove('invisible');
+  utilities.showElement(uploadMessage);
   uploadMessage.classList.toggle('upload-message-error', isError);
   return uploadMessage;
 }
@@ -52,12 +55,57 @@ function showErrorMsg() {
 }
 
 function hideMessage() {
-  uploadMessage.classList.add('invisible');
+  utilities.hideElement(uploadMessage);
+}
+
+/**
+ * Обработчик изменения изображения в форме загрузки. Если загруженный
+ * файл является изображением, считывается исходник картинки, создается
+ * Resizer с загруженной картинкой, добавляется в форму кадрирования
+ * и показывается форма кадрирования.
+ * @param {Event} evt
+ */
+
+var onUploadFormCnange = function(evt) {
+  var element = evt.target;
+  if (element.id === 'upload-file') {
+    // Проверка типа загружаемого файла, тип должен быть изображением
+    // одного из форматов: JPEG, PNG, GIF или SVG.
+    if (utilities.isImgFile(element.files[0].type)) {
+      var fileReader = new FileReader();
+
+      showUploadingMsg();
+
+      fileReader.onload = function() {
+        resizeModule.setResizer(fileReader.result);
+        hideUploadForm();
+        resizeModule.showResizeForm();
+        hideMessage();
+      };
+
+      fileReader.readAsDataURL(element.files[0]);
+      element.value = '';
+    } else {
+      // Показ сообщения об ошибке, если загружаемый файл, не является
+      // поддерживаемым изображением.
+      showErrorMsg();
+    }
+  }
+};
+
+function showUploadForm() {
+  uploadForm.addEventListener('change', onUploadFormCnange);
+  updateBackground();
+  utilities.showElement(uploadForm);
+}
+showUploadForm();
+
+function hideUploadForm() {
+  utilities.hideElement(uploadForm);
+  uploadForm.removeEventListener('change', onUploadFormCnange);
 }
 
 module.exports = {
-  uploadForm: uploadForm,
-  showUploadingMsg: showUploadingMsg,
-  showErrorMsg: showErrorMsg,
-  hideMessage: hideMessage
+  showUploadForm: showUploadForm,
+  hideUploadForm: hideUploadForm
 };

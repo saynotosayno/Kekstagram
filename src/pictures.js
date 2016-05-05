@@ -1,6 +1,6 @@
 'use strict';
 
-var Photo = require('./photo');
+var PictureElement = require('./picture-element');
 var galleryModule = require('./gallery');
 
 var filters = document.querySelector('.filters');
@@ -28,25 +28,39 @@ var getPictures = function(callback) {
   picturesBlock.classList.remove('pictures-failure');
   var xhr = new XMLHttpRequest();
 
-  /** @param {ProgressEvent} */
-  xhr.onload = function(evt) {
+  var removeListeners = function() {
+    xhr.removeEventListener('load', onLoad);
+    xhr.removeEventListener('error', onError);
+    xhr.removeEventListener('timeout', onTimeout);
+  };
+
+  var onLoad = function(evt) {
+    removeListeners();
     var loadedData = JSON.parse(evt.target.response);
     callback(loadedData);
     picturesBlock.classList.remove('pictures-loading');
   };
+  xhr.addEventListener('load', onLoad);
+
   function changeInformSticker() {
     picturesBlock.classList.add('pictures-failure');
     picturesBlock.classList.remove('pictures-loading');
   }
-  xhr.onerror = function() {
+
+  var onError = function() {
+    removeListeners();
     console.warn('Что-то пошло не так');
     changeInformSticker();
   };
+  xhr.addEventListener('error', onError);
+
   xhr.timeout = 10000;
-  xhr.ontimeout = function() {
+  var onTimeout = function() {
+    removeListeners();
     console.warn('Нет ответа от сервера. Проверьте подключение к интернету');
     changeInformSticker();
   };
+  xhr.addEventListener('timeout', onTimeout);
   xhr.open('GET', PICTURES_LOAD_URL);
   xhr.send();
 };
@@ -67,19 +81,21 @@ var isNextPageAvailable = function(pictures, page, pageSize) {
   return page <= Math.floor(pictures.length / pageSize);
 };
 
-/* скролл через debounce */
-var setScrollEnabled = function() {
-  var scrollTimeout;
-  window.addEventListener('scroll', function() {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(function() {
-      console.log('debounce', new Date().toISOString());
-      renderNextPages();
-    }, 100);
-  });
+var scrollTimeout;
+
+var onWindowScroll = function() {
+  clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(function() {
+    renderNextPages();
+  }, 100);
 };
 
-/** @type {Array.<Photo>} */
+/* скролл через debounce */
+var setScrollEnabled = function() {
+  window.addEventListener('scroll', onWindowScroll);
+};
+
+/** @type {Array.<PictureElement>} */
 var renderedPictures = [];
 
 /**
@@ -94,7 +110,7 @@ var renderPictures = function(pictures, page, replace) {
   var from = page * PAGE_SIZE;
   var to = from + PAGE_SIZE;
   pictures.slice(from, to).forEach(function(picture) {
-    renderedPictures.push(new Photo(picture, pictureContainer));
+    renderedPictures.push(new PictureElement(picture, pictureContainer));
   });
 };
 
@@ -147,12 +163,14 @@ var setFilterEnabled = function(filter) {
   renderNextPages(true);
 };
 
+var onFiltersContainerClick = function(evt) {
+  if (evt.target.classList.contains('filters-radio')) {
+    setFilterEnabled(evt.target.id);
+  }
+};
+
 var setFiltrationEnabled = function() {
-  filtersContainer.addEventListener('click', function(evt) {
-    if (evt.target.classList.contains('filters-radio')) {
-      setFilterEnabled(evt.target.id);
-    }
-  });
+  filtersContainer.addEventListener('click', onFiltersContainerClick);
 };
 
 getPictures(function(loadedPictures) {

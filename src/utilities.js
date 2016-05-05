@@ -18,6 +18,26 @@ function isImgFile(type) {
   return fileRegExp.test(type);
 }
 
+var invisibleClass = 'invisible';
+
+/**
+ * Делает элемент видимым
+ * @param  {HTMLElement} element
+ */
+function showElement(element) {
+  element.classList.remove(invisibleClass);
+}
+
+/**
+ * Скрывает элемент
+ * @param  {HTMLElement} element
+ */
+function hideElement(element) {
+  element.classList.add(invisibleClass);
+}
+
 module.exports = {
-  isImgFile: isImgFile
+  isImgFile: isImgFile,
+  showElement: showElement,
+  hideElement: hideElement
 };
